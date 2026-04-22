@@ -2,19 +2,66 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>登录 - 追问智学</title>
   <link rel="stylesheet" href="/static/css/app.css" />
 </head>
-<body class="login-body">
-<div class="card">
-  <h2>登录追问智学</h2>
-  {% if error %}<p class="error">{{ error }}</p>{% endif %}
-  <form method="post" action="/login">
-    <label>用户名<input name="username" required /></label>
-    <label>密码<input name="password" type="password" required /></label>
-    <button type="submit">登录</button>
-  </form>
-  <p class="tip">示例账号：admin / teacher1 / student1，密码均为 123456</p>
-</div>
+<body class="auth-page">
+  <main class="auth-shell">
+    <section class="auth-brand-panel">
+      <p class="eyebrow">Socratic Classroom AI</p>
+      <h1>追问智学</h1>
+      <p class="auth-subtitle">面向信息技术课堂的苏格拉底式智能辅学系统</p>
+      <p class="auth-desc">帮助教师组织课堂探究，帮助学生在“追问-提示-总结”中逐步掌握知识点与编程思维。</p>
+      <ul class="feature-list">
+        <li>课堂状态实时同步，支持开始 / 暂停 / 结束</li>
+        <li>按章节与问题链推进学习，而非一次性给答案</li>
+        <li>支持代码练习、报错分析与课堂反馈</li>
+        <li>适配 Windows 局域网部署，三步即可演示</li>
+      </ul>
+    </section>
+
+    <section class="auth-form-panel">
+      <div class="auth-card">
+        <h2>账号登录</h2>
+        <p class="muted">使用演示账号快速体验管理员、教师、学生三端流程。</p>
+        {% if error %}<p class="error">{{ error }}</p>{% endif %}
+
+        <form method="post" action="/login" id="login-form">
+          <label>用户名
+            <input id="username" name="username" autocomplete="username" required />
+          </label>
+          <label>密码
+            <input id="password" name="password" type="password" autocomplete="current-password" required />
+          </label>
+          <button type="submit" id="login-btn">登录并进入系统</button>
+          <p id="loading-tip" class="tip" style="display:none;">正在验证身份，请稍候...</p>
+        </form>
+
+        <details class="demo-account-box" open>
+          <summary>演示账号快捷填充</summary>
+          <div class="demo-actions">
+            <button type="button" class="secondary" onclick="fillDemo('admin')">管理员</button>
+            <button type="button" class="secondary" onclick="fillDemo('teacher1')">教师</button>
+            <button type="button" class="secondary" onclick="fillDemo('student1')">学生</button>
+          </div>
+          <p class="tip">默认密码：<code>123456</code></p>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function fillDemo(username) {
+      document.getElementById('username').value = username;
+      document.getElementById('password').value = '123456';
+      document.getElementById('username').focus();
+    }
+
+    document.getElementById('login-form').addEventListener('submit', () => {
+      document.getElementById('login-btn').disabled = true;
+      document.getElementById('loading-tip').style.display = 'block';
+    });
+  </script>
 </body>
 </html>

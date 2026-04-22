@@ -1,29 +1,58 @@
 {% extends 'base.html' %}
 {% block content %}
+<section class="hero-card">
+  <div>
+    <p class="eyebrow">Student Learning Center</p>
+    <h2>学生学习入口</h2>
+    <p class="muted">围绕课堂章节与问题链进行学习，先思考、再提示、后总结。</p>
+  </div>
+  <div class="status-pill status-{{ class_status }}">
+    {% if class_status == 'not_started' %}
+      课堂未开始
+    {% elif class_status == 'paused' %}
+      课堂已暂停
+    {% elif class_status == 'ended' %}
+      课堂已结束
+    {% else %}
+      课堂进行中
+    {% endif %}
+  </div>
+</section>
+
 <section class="card">
-  <h2>学生端：首页</h2>
+  <h3>当前课堂状态</h3>
   {% if class_status == 'not_started' %}
-    <p>课堂未开始，请等待老师开始。</p>
+    <p class="empty">老师还未开始课堂，请稍候刷新或保持页面打开。</p>
   {% elif class_status == 'paused' %}
-    <p class="tip">课堂已暂停，请等待老师恢复。</p>
+    <p class="tip">老师已暂停课堂，请等待继续。</p>
   {% elif class_status == 'ended' %}
-    <p class="tip">本节课堂已结束，可查看完成情况。</p>
+    <p class="tip">本节课堂已结束，你可以回顾本章内容并等待下一节课。</p>
   {% else %}
-    <p><strong>当前课堂：</strong>{{ current_status.chapter_title if current_status else '-' }}</p>
+    <p><strong>当前章节：</strong>{{ current_status.chapter_title if current_status else '-' }}</p>
     <p class="tip">开始时间：{{ current_status.started_at if current_status else '-' }}</p>
   {% endif %}
 </section>
 
-{% for course in courses %}
 <section class="card">
-  <h3>{{ course.title }}</h3>
-  <ul>
-    {% for chapter in course.chapters if chapter.is_published %}
-      <li><a href="/student/chapter/{{ chapter.id }}">{{ chapter.title }}</a></li>
+  <h3>可学习章节</h3>
+  <div class="course-grid">
+    {% for course in courses %}
+      <article class="course-card">
+        <h4>{{ course.title }}</h4>
+        <p class="muted">{{ course.description or '课程简介待补充' }}</p>
+        <ul class="chapter-list">
+          {% for chapter in course.chapters if chapter.is_published %}
+            <li><a href="/student/chapter/{{ chapter.id }}">{{ chapter.title }}</a></li>
+          {% else %}
+            <li class="empty">暂无可学习章节</li>
+          {% endfor %}
+        </ul>
+      </article>
+    {% else %}
+      <p class="empty">暂无课程，请联系教师先上传并发布章节。</p>
     {% endfor %}
-  </ul>
+  </div>
 </section>
-{% endfor %}
 
 <script>
   const userId = {{ request.session.get('user_id', 0) }};

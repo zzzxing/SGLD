@@ -1,87 +1,120 @@
 {% extends 'base.html' %}
 {% block content %}
-<section class="card">
-  <h2>教师端：课堂控制</h2>
-  <form action="/api/teacher/classroom/start" method="post">
-    <label>选择已发布章节
-      <select name="chapter_id" required>
-        {% for chapter in chapters if chapter.is_published %}
-          <option value="{{ chapter.id }}">{{ chapter.title }}</option>
-        {% endfor %}
-      </select>
-    </label>
-    <button type="submit">开始课堂</button>
-  </form>
-  {% if active_session %}
-    <p><strong>当前课堂：</strong>Session #{{ active_session.id }} | 状态：{{ active_session.status }} | 章节ID {{ active_session.chapter_id }}</p>
-    {% if active_session.status == 'active' %}
-      <form action="/teacher/classroom/{{ active_session.id }}/pause" method="post"><button type="submit">暂停课堂</button></form>
-      <form action="/teacher/classroom/{{ active_session.id }}/end" method="post"><button type="submit">结束课堂</button></form>
-    {% elif active_session.status == 'paused' %}
-      <p class="tip">当前课堂处于暂停状态，可重新开始新课堂或结束当前课堂。</p>
-      <form action="/teacher/classroom/{{ active_session.id }}/end" method="post"><button type="submit">结束课堂</button></form>
-    {% endif %}
-  {% else %}
-    <p class="tip">暂无课堂会话。</p>
-  {% endif %}
+<section class="hero-card">
+  <div>
+    <p class="eyebrow">Teacher Console</p>
+    <h2>教师课堂控制台</h2>
+    <p class="muted">统一管理课堂状态、教学内容与学生学习进度。</p>
+  </div>
+  <div class="status-pill status-{{ active_session.status if active_session else 'not_started' }}">
+    {{ '进行中' if active_session and active_session.status == 'active' else ('已暂停' if active_session and active_session.status == 'paused' else ('已结束' if active_session and active_session.status == 'ended' else '未开始')) }}
+  </div>
 </section>
 
+<div class="grid-2">
+  <section class="card">
+    <h3>课堂控制区</h3>
+    <form action="/api/teacher/classroom/start" method="post">
+      <label>选择已发布章节
+        <select name="chapter_id" required>
+          {% for chapter in chapters if chapter.is_published %}
+            <option value="{{ chapter.id }}">{{ chapter.title }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <button type="submit">开始课堂</button>
+    </form>
+
+    {% if active_session %}
+      <p class="tip">Session #{{ active_session.id }} ｜章节ID {{ active_session.chapter_id }}</p>
+      {% if active_session.status == 'active' %}
+        <form action="/teacher/classroom/{{ active_session.id }}/pause" method="post"><button type="submit" class="secondary">暂停课堂</button></form>
+        <form action="/teacher/classroom/{{ active_session.id }}/end" method="post"><button type="submit">结束课堂</button></form>
+      {% elif active_session.status == 'paused' %}
+        <p class="tip">课堂已暂停，可直接结束本节。</p>
+        <form action="/teacher/classroom/{{ active_session.id }}/end" method="post"><button type="submit">结束课堂</button></form>
+      {% else %}
+        <p class="success">本节课堂已结束，可开始下一节。</p>
+      {% endif %}
+    {% else %}
+      <p class="empty">当前无课堂会话。</p>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h3>内容管理区（上传与解析）</h3>
+    <form action="/api/teacher/resources/upload" method="post" enctype="multipart/form-data">
+      <input type="hidden" name="uploader_id" value="{{ user_id }}" />
+      <label>归属课程
+        <select name="course_id">{% for course in courses %}<option value="{{ course.id }}">{{ course.title }}</option>{% endfor %}</select>
+      </label>
+      <input type="file" name="file" required />
+      <button type="submit">上传教材</button>
+    </form>
+    <p class="tip">支持 txt/md；pdf/docx 在依赖不足时会显示明确解析状态。</p>
+  </section>
+</div>
+
 <section class="card">
-  <h3>上传教材并触发解析（支持 txt/md，pdf/docx 带优雅降级）</h3>
-  <form action="/api/teacher/resources/upload" method="post" enctype="multipart/form-data">
-    <input type="hidden" name="uploader_id" value="{{ user_id }}" />
-    <label>归属课程
-      <select name="course_id">{% for course in courses %}<option value="{{ course.id }}">{{ course.title }}</option>{% endfor %}</select>
-    </label>
-    <input type="file" name="file" required />
-    <button type="submit">上传教材</button>
-  </form>
-  <h4>解析任务</h4>
+  <h3>资源解析任务</h3>
   <table>
-    <thead><tr><th>ID</th><th>文件</th><th>类型</th><th>状态</th><th>文本长度</th><th>章节数</th><th>最近处理时间</th><th>摘要/消息</th><th>操作</th></tr></thead>
+    <thead><tr><th>ID</th><th>文件</th><th>类型</th><th>状态</th><th>文本长度</th><th>章节数</th><th>最近处理</th><th>操作</th></tr></thead>
     <tbody>
       {% for r in resources %}
       <tr>
         <td>{{ r.id }}</td><td>{{ r.original_name }}</td><td>{{ r.file_ext }}</td><td>{{ r.parse_status }}</td>
         <td>{{ r.extracted_text_len }}</td><td>{{ r.generated_chapter_count }}</td><td>{{ r.last_processed_at or '-' }}</td>
-        <td>{{ r.parsed_summary }} {{ r.parse_message }}</td>
         <td>
           <form action="/teacher/resources/{{ r.id }}/parse" method="post">
             <select name="course_id">{% for course in courses %}<option value="{{ course.id }}">{{ course.title }}</option>{% endfor %}</select>
-            <button type="submit">解析并生成内容</button>
+            <button type="submit">解析并生成</button>
           </form>
         </td>
       </tr>
       {% else %}
-      <tr><td colspan="9">暂无上传资源。</td></tr>
+      <tr><td colspan="8" class="empty">暂无上传资源。</td></tr>
       {% endfor %}
     </tbody>
   </table>
 </section>
 
-<section class="card"><h3>章节审核与发布</h3>
-{% for chapter in chapters %}
-<div class="panel">
-  <p><strong>{{ chapter.title }}</strong> | 状态：{{ '已发布' if chapter.is_published else '未发布' }}</p>
-  <form action="/teacher/chapter/{{ chapter.id }}/publish" method="post"><button type="submit">切换发布状态</button></form>
-  <form action="/teacher/chapter/{{ chapter.id }}/edit" method="post"><textarea name="explanation" rows="4">{{ chapter.explanation }}</textarea><button type="submit">保存章节讲解</button></form>
+<div class="grid-2">
+  <section class="card">
+    <h3>章节管理区</h3>
+    {% for chapter in chapters %}
+    <div class="panel">
+      <p><strong>{{ chapter.title }}</strong> ｜ {{ '已发布' if chapter.is_published else '未发布' }}</p>
+      <form action="/teacher/chapter/{{ chapter.id }}/publish" method="post"><button type="submit" class="secondary">切换发布状态</button></form>
+      <form action="/teacher/chapter/{{ chapter.id }}/edit" method="post">
+        <textarea name="explanation" rows="3">{{ chapter.explanation }}</textarea>
+        <button type="submit">保存章节讲解</button>
+      </form>
+    </div>
+    {% else %}
+    <p class="empty">暂无章节，请先解析教材。</p>
+    {% endfor %}
+  </section>
+
+  <section class="card">
+    <h3>问题链管理区</h3>
+    {% for step in steps %}
+      <form class="panel" action="/teacher/step/{{ step.id }}/edit" method="post">
+        <p class="tip">步骤 #{{ step.id }}</p>
+        <textarea name="question_text" rows="2">{{ step.question_text }}</textarea>
+        <input name="hint1" value="{{ step.hint_level_1 }}" placeholder="提示1" />
+        <input name="hint2" value="{{ step.hint_level_2 }}" placeholder="提示2" />
+        <input name="hint3" value="{{ step.hint_level_3 }}" placeholder="提示3" />
+        <button type="submit">保存步骤</button>
+      </form>
+    {% else %}
+      <p class="empty">暂无问题链步骤。</p>
+    {% endfor %}
+  </section>
 </div>
-{% else %}
-<p class="tip">暂无章节，请先上传并解析教材。</p>
-{% endfor %}
-</section>
-
-<section class="card"><h3>知识点审核</h3>
-{% for kp in kps %}<form class="panel" action="/teacher/kp/{{ kp.id }}/edit" method="post"><input name="title" value="{{ kp.title }}" /><textarea name="content" rows="2">{{ kp.content }}</textarea><button type="submit">保存知识点</button></form>{% else %}<p class="tip">暂无知识点。</p>{% endfor %}
-</section>
-
-<section class="card"><h3>问题链步骤审核</h3>
-{% for step in steps %}<form class="panel" action="/teacher/step/{{ step.id }}/edit" method="post"><p>步骤 #{{ step.id }}</p><textarea name="question_text" rows="2">{{ step.question_text }}</textarea><input name="hint1" value="{{ step.hint_level_1 }}" placeholder="提示1" /><input name="hint2" value="{{ step.hint_level_2 }}" placeholder="提示2" /><input name="hint3" value="{{ step.hint_level_3 }}" placeholder="提示3" /><button type="submit">保存步骤</button></form>{% else %}<p class="tip">暂无问题链步骤。</p>{% endfor %}
-</section>
 
 {% if active_session %}
-<section class="card" id="dashboard-box" hx-get="/teacher/dashboard-fragment?session_id={{ active_session.id }}" hx-trigger="load, every 8s" hx-swap="innerHTML">加载中...</section>
-<section class="card" id="analytics-box" hx-get="/teacher/analytics-fragment?session_id={{ active_session.id }}" hx-trigger="load, every 8s" hx-swap="innerHTML">加载分析中...</section>
+<section class="card" id="dashboard-box" hx-get="/teacher/dashboard-fragment?session_id={{ active_session.id }}" hx-trigger="load, every 8s" hx-swap="innerHTML">加载实时看板中...</section>
+<section class="card" id="analytics-box" hx-get="/teacher/analytics-fragment?session_id={{ active_session.id }}" hx-trigger="load, every 8s" hx-swap="innerHTML">加载课堂分析中...</section>
 {% if lifecycle_summary %}
 <section class="card">
   <h3>课堂结束小结</h3>
@@ -98,7 +131,6 @@
   ws.onmessage = () => {
     htmx.ajax('GET', '/teacher/dashboard-fragment?session_id={{ active_session.id }}', '#dashboard-box');
     htmx.ajax('GET', '/teacher/analytics-fragment?session_id={{ active_session.id }}', '#analytics-box');
-    location.reload();
   };
   ws.onerror = () => console.warn('WebSocket异常，已回退HTMX定时刷新');
 </script>
