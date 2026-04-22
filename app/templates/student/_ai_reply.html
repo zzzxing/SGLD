@@ -1,9 +1,12 @@
-<div>
-  <p><strong>系统反馈：</strong>{{ message }}</p>
-  <p><strong>动作：</strong>{{ action }}</p>
-  <p><strong>下一问题：</strong>{{ question_text }}</p>
-  <p><strong>提示层级：</strong>{{ hint_level }}</p>
-  <p><strong>当前进度：</strong>{{ progress_percent }}%</p>
+<div class="response-block">
+  <p><strong>系统反馈</strong></p>
+  <p>{{ message }}</p>
+  <div class="meta-inline">
+    <span>动作：{{ action }}</span>
+    <span>提示层级：{{ hint_level }}</span>
+    <span>当前进度：{{ progress_percent }}%</span>
+  </div>
+  <p><strong>下一问题</strong>：{{ question_text }}</p>
   <p class="tip">模型：{{ provider }} / {{ model }}</p>
   <p class="tip">RAG 命中: {{ rag_hit_count }} | 来源: {{ rag_sources }} | fallback={{ rag_fallback }}</p>
 </div>

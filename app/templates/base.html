@@ -3,14 +3,22 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>追问智学</title>
+  <title>{% block page_title %}追问智学{% endblock %}</title>
   <script src="https://unpkg.com/htmx.org@1.9.12"></script>
   <link rel="stylesheet" href="/static/css/app.css" />
 </head>
 <body>
 <header class="topbar">
-  <h1>追问智学</h1>
-  <form action="/logout" method="post"><button type="submit">退出</button></form>
+  <div>
+    <p class="eyebrow">Socratic Learning Platform</p>
+    <h1>追问智学</h1>
+  </div>
+  <div class="topbar-actions">
+    {% if request.session.get('role') %}
+      <span class="status-pill status-{{ request.session.get('role') }}">{{ request.session.get('role') }}</span>
+      <form action="/logout" method="post"><button type="submit" class="secondary">退出登录</button></form>
+    {% endif %}
+  </div>
 </header>
 <main class="container">{% block content %}{% endblock %}</main>
 </body>

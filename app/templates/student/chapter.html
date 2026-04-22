@@ -1,67 +1,85 @@
 {% extends 'base.html' %}
+{% block page_title %}{{ chapter.title }} - 学习章节{% endblock %}
 {% block content %}
-<section class="card">
-  <h2>{{ chapter.title }}</h2>
-  <p>{{ chapter.explanation or chapter.summary }}</p>
-  {% if class_status == 'not_started' %}
-    <p class="tip">课堂未开始：请等待教师开始课堂。</p>
-  {% elif class_status == 'paused' %}
-    <p class="tip">课堂已暂停：请等待教师恢复。</p>
-  {% elif class_status == 'ended' %}
-    <p class="tip">课堂已结束：可查看本节小结。</p>
-  {% elif active_session and active_session.chapter_id == chapter.id %}
-    <p><strong>课堂状态：</strong>进行中（Session #{{ active_session.id }}）</p>
-  {% else %}
-    <p class="error">当前章节未处于课堂推送状态。</p>
-  {% endif %}
+<section class="hero-card">
+  <div>
+    <p class="eyebrow">Chapter Workspace</p>
+    <h2>{{ chapter.title }}</h2>
+    <p class="muted">{{ chapter.explanation or chapter.summary }}</p>
+  </div>
+  <div class="status-pill status-{{ class_status }}">
+    {% if class_status == 'not_started' %}未开始{% elif class_status == 'paused' %}已暂停{% elif class_status == 'ended' %}已结束{% else %}进行中{% endif %}
+  </div>
 </section>
+
+<div class="grid-2-1">
+  <section class="card">
+    <h3>学习导航</h3>
+    <ul class="meta-list">
+      <li><span>当前章节</span><strong>{{ chapter.title }}</strong></li>
+      <li><span>当前知识点</span><strong>{{ current_kp.title if current_kp else '待进入' }}</strong></li>
+      <li><span>当前步骤</span><strong>{{ current_step.step_no if current_step else '已完成' }}</strong></li>
+      <li><span>提示层级</span><strong>{{ study_record.hint_level if study_record else 0 }}</strong></li>
+      <li><span>学习进度</span><strong>{{ study_record.progress_percent if study_record else 0 }}%</strong></li>
+    </ul>
+    {% if current_step %}
+      <div class="panel">
+        <p class="eyebrow">当前问题</p>
+        <p>{{ current_step.question_text }}</p>
+      </div>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h3>课堂状态说明</h3>
+    {% if class_status == 'not_started' %}
+      <p class="empty">课堂未开始，请等待教师开始课堂。</p>
+    {% elif class_status == 'paused' %}
+      <p class="tip">课堂已暂停，当前无法提交新的步骤答案。</p>
+    {% elif class_status == 'ended' %}
+      <p class="tip">课堂已结束，可查看下方小结。</p>
+    {% elif active_session and active_session.chapter_id == chapter.id %}
+      <p class="success">课堂进行中（Session #{{ active_session.id }}），可以继续作答。</p>
+    {% else %}
+      <p class="error">当前章节尚未被教师推送为课堂学习章节。</p>
+    {% endif %}
+  </section>
+</div>
 
 {% if summary %}
 <section class="card">
   <h3>本节小结</h3>
-  <ul>
-    <li>完成率：{{ summary.completion_rate }}%</li>
-    <li>平均提示层级：{{ summary.avg_hint_level }}</li>
-    <li>主要卡点步骤：{{ summary.top_stuck_step }}</li>
-    <li>最近活动学生数：{{ summary.recent_active_students }}</li>
-  </ul>
+  <div class="stats-grid">
+    <div class="stat-card"><p>完成率</p><strong>{{ summary.completion_rate }}%</strong></div>
+    <div class="stat-card"><p>平均提示层级</p><strong>{{ summary.avg_hint_level }}</strong></div>
+    <div class="stat-card"><p>主要卡点步骤</p><strong>{{ summary.top_stuck_step }}</strong></div>
+    <div class="stat-card"><p>最近活动人数</p><strong>{{ summary.recent_active_students }}</strong></div>
+  </div>
 </section>
 {% endif %}
 
 {% if study_record and class_status == 'active' %}
-<section class="card">
-  <h3>学习导航</h3>
-  <ul>
-    <li>当前章节：{{ chapter.title }}</li>
-    <li>当前知识点：{{ current_kp.title if current_kp else '无' }}</li>
-    <li>当前问题步骤：{{ current_step.step_no if current_step else '已完成' }}</li>
-    <li>提示层级：{{ study_record.hint_level }}</li>
-    <li>完成进度：{{ study_record.progress_percent }}%</li>
-  </ul>
-  {% if current_step %}
-    <p><strong>当前问题：</strong>{{ current_step.question_text }}</p>
-  {% endif %}
-</section>
+<div class="grid-2">
+  <section class="card">
+    <h3>问题链作答区</h3>
+    <form hx-post="/student/dialogue" hx-target="#ai-box" hx-swap="innerHTML">
+      <input type="hidden" name="study_record_id" value="{{ study_record.id }}" />
+      <textarea name="answer_text" rows="5" placeholder="请围绕当前问题进行回答"></textarea>
+      <button type="submit">提交回答</button>
+    </form>
+    <div id="ai-box" class="panel response-panel">等待你的回答…</div>
+  </section>
 
-<section class="card">
-  <h3>问题链作答</h3>
-  <form hx-post="/student/dialogue" hx-target="#ai-box" hx-swap="innerHTML">
-    <input type="hidden" name="study_record_id" value="{{ study_record.id }}" />
-    <textarea name="answer_text" rows="4" placeholder="根据当前问题作答"></textarea>
-    <button type="submit">提交回答</button>
-  </form>
-  <div id="ai-box" class="panel">等待你的回答…</div>
-</section>
-
-<section class="card">
-  <h3>Python 代码练习</h3>
-  <form hx-post="/student/code/run" hx-target="#code-box" hx-swap="innerHTML">
-    <input type="hidden" name="study_record_id" value="{{ study_record.id }}" />
-    <textarea name="source_code" rows="8" placeholder="print('hello')"></textarea>
-    <button type="submit">运行代码</button>
-  </form>
-  <div id="code-box" class="panel">等待运行结果…</div>
-</section>
+  <section class="card">
+    <h3>Python 代码练习区</h3>
+    <form hx-post="/student/code/run" hx-target="#code-box" hx-swap="innerHTML">
+      <input type="hidden" name="study_record_id" value="{{ study_record.id }}" />
+      <textarea name="source_code" rows="8" placeholder="print('hello')"></textarea>
+      <button type="submit">运行代码</button>
+    </form>
+    <div id="code-box" class="panel response-panel">等待运行结果…</div>
+  </section>
+</div>
 {% endif %}
 
 <script>

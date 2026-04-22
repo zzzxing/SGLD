@@ -1,4 +1,4 @@
-<h3>课堂实时看板</h3>
+<h3>实时学生看板</h3>
 <table>
   <thead>
     <tr><th>学生</th><th>在线状态</th><th>当前章节</th><th>最近回答时间</th><th>完成进度</th><th>详情</th></tr>
@@ -7,15 +7,18 @@
     {% for row in dashboard_rows %}
       <tr>
         <td>{{ row.student_name }}</td>
-        <td>{{ '在线' if row.is_online else '离线' }}</td>
+        <td><span class="status-pill status-{{ 'active' if row.is_online else 'not_started' }}">{{ '在线' if row.is_online else '离线' }}</span></td>
         <td>{{ row.chapter_title }}</td>
-        <td>{{ row.last_answer_at }}</td>
-        <td>{{ row.progress_percent }}%</td>
-        <td><a href="/teacher/student/{{ row.student_id }}?session_id={{ session_id }}">查看</a></td>
+        <td>{{ row.last_answer_at or '-' }}</td>
+        <td>
+          <div class="progress-wrap"><div class="progress-bar" style="width: {{ row.progress_percent }}%"></div></div>
+          <span class="tip">{{ row.progress_percent }}%</span>
+        </td>
+        <td><a href="/teacher/student/{{ row.student_id }}?session_id={{ session_id }}">查看详情</a></td>
       </tr>
     {% endfor %}
     {% if not dashboard_rows %}
-      <tr><td colspan="6">暂无学生学习记录。</td></tr>
+      <tr><td colspan="6" class="empty">暂无学生学习记录。</td></tr>
     {% endif %}
   </tbody>
 </table>
