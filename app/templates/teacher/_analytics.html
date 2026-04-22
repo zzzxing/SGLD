@@ -1,0 +1,19 @@
+<h3>课堂分析</h3>
+<ul>
+  <li>班级完成率：{{ a.completion_rate }}%</li>
+  <li>当前在线人数：{{ a.online_count }}</li>
+  <li>卡点最多步骤：{{ a.top_stuck_step }}</li>
+  <li>提示层级分布：hint1={{ a.hint_distribution.hint1 }}, hint2={{ a.hint_distribution.hint2 }}, hint3={{ a.hint_distribution.hint3 }}</li>
+  <li>平均提示层级：{{ a.avg_hint_level }}</li>
+  <li>最近活动学生数：{{ a.recent_active_students }}</li>
+</ul>
+<div class="panel">
+  <strong>当前章节分布：</strong>
+  <ul>
+    {% for k, v in a.chapter_distribution.items() %}
+      <li>{{ k }}: {{ v }}</li>
+    {% else %}
+      <li>暂无数据</li>
+    {% endfor %}
+  </ul>
+</div>

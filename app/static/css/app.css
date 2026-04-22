@@ -1,0 +1,17 @@
+body { font-family: Arial, sans-serif; margin: 0; background: #f5f7fb; color: #1f2937; }
+.topbar { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #0f172a; color: #fff; }
+.container { max-width: 1080px; margin: 20px auto; padding: 0 12px; }
+.card { background: #fff; border-radius: 10px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.login-body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+label { display: block; margin-bottom: 8px; font-weight: 600; }
+input, textarea, button, select { width: 100%; padding: 8px; margin-top: 4px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 6px; }
+button { width: auto; cursor: pointer; background: #1d4ed8; color: #fff; border: 0; }
+button:hover { opacity: 0.9; }
+.error { color: #b91c1c; font-weight: 600; }
+.success { color: #166534; font-weight: 600; }
+.panel { margin-top: 10px; padding: 10px; background: #eff6ff; border-radius: 8px; }
+.empty { color: #64748b; font-style: italic; }
+table { width: 100%; border-collapse: collapse; }
+th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; vertical-align: top; }
+.tip { color: #475569; font-size: 12px; }
+pre { background: #0b1020; color: #dbeafe; padding: 8px; border-radius: 6px; overflow-x: auto; }

@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="card">
+  <h2>学生详情：{{ student.full_name if student else ('学生' ~ record.student_id) }}</h2>
+  <ul>
+    <li>当前章节：{{ chapter.title if chapter else '-' }}</li>
+    <li>当前知识点：{{ kp.title if kp else '-' }}</li>
+    <li>当前问题链步骤：{{ step.step_no if step else '已完成' }}</li>
+    <li>当前进度：{{ record.progress_percent }}%</li>
+    <li>最近代码结果：{{ record.last_code_status }} / {{ record.last_code_error }}</li>
+  </ul>
+  <p><strong>最近回答：</strong>{{ record.student_answer }}</p>
+  <p><strong>最近AI回复：</strong>{{ record.ai_reply }}</p>
+</section>
+
+<section class="card">
+  <h3>教师评语/标签</h3>
+  <form action="/teacher/student/{{ record.student_id }}/feedback" method="post">
+    <input type="hidden" name="session_id" value="{{ session_id }}" />
+    <label>标签<input name="tag" value="{{ feedback.tag if feedback else '' }}" placeholder="如：需关注" /></label>
+    <label>评语<textarea name="comment" rows="3">{{ feedback.comment if feedback else '' }}</textarea></label>
+    <button type="submit">保存评语</button>
+  </form>
+</section>
+{% endblock %}
