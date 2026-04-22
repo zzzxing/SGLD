@@ -1,0 +1,9 @@
+<div>
+  <p><strong>运行状态：</strong>{{ result.status }}</p>
+  <pre>stdout:
+{{ result.stdout }}</pre>
+  <pre>stderr:
+{{ result.stderr }}</pre>
+  <p><strong>AI分析：</strong>{{ assistant_feedback }}</p>
+  <p class="tip">RAG 命中: {{ rag_hit_count }} | 来源: {{ rag_sources }} | fallback={{ rag_fallback }}</p>
+</div>
