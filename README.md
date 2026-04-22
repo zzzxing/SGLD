@@ -4,10 +4,10 @@
 
 ## V3 重点收口
 
-- 初始化与运行闭环：新增 `scripts/bootstrap.py`，自动尝试建环境、安装依赖、初始化数据库、写入种子数据。
+- 初始化与运行闭环：`scripts/bootstrap.py` 自动尝试建环境、安装依赖、初始化数据库、写入种子数据；任一步失败会直接停止。
+- 稳定数据库路径：SQLite 使用项目内绝对路径，并在启动 engine 前自动创建父目录。
 - 权限与路由安全：API 与 Web 路由统一增加角色校验辅助函数。
-- 课堂生命周期：支持开始/暂停/结束，学生端对未开始/进行中/暂停/结束状态有对应页面反馈。
-- 发布前可演示性：教师端补课堂结束小结；管理员端/学生端/教师端补空状态与提示语。
+- 课堂生命周期：支持开始/暂停/结束，学生端对应未开始/进行中/暂停/结束状态。
 
 ## 从零启动（最短步骤）
 
@@ -21,6 +21,31 @@
 python3 scripts/bootstrap.py
 ./run_server.sh
 ```
+
+## 数据库重置与重新导入种子数据
+
+> 用于“登录失败/账号不存在/数据库损坏”场景。
+
+```bash
+# 1) 重新建表（会清空旧数据）
+python scripts/init_db.py
+
+# 2) 写入演示账号与示范课程
+python scripts/seed_demo_data.py
+```
+
+执行时会打印：
+- 配置的 `DATABASE_URL`
+- 实际解析后的 `DATABASE_URL`
+- SQLite 文件绝对路径
+
+## 演示账号
+
+- 管理员：`admin / 123456`
+- 教师：`teacher1 / 123456`
+- 学生：`student1 / 123456`
+
+> 密码在数据库中以 bcrypt 哈希保存，登录使用 `verify_password` 校验，不是明文比对。
 
 ## 依赖安装失败时的 fallback
 
@@ -37,38 +62,14 @@ set PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
 python scripts\bootstrap.py
 ```
 
-## 演示路线（按角色）
-
-### 1) 管理员
-1. 登录 `admin/123456`。
-2. 在系统设置页配置上传大小、允许类型、安全级别、默认温度/max_tokens/超时。
-3. 在模型配置区新增或编辑 provider，切换默认模型。
-
-### 2) 教师
-1. 登录 `teacher1/123456`。
-2. 上传教材并触发解析，观察文件类型/解析状态/提取长度/章节数/最近处理时间。
-3. 审核章节、知识点、问题链并发布章节。
-4. 开始课堂 -> 暂停课堂 -> 结束课堂，观察看板和分析区变化。
-5. 打开学生详情，查看最近回答/AI回复/进度/代码结果并填写评语标签。
-
-### 3) 学生
-1. 登录 `student1/123456`。
-2. 未开始时显示等待；进行中时可学习；暂停时显示等待；结束时显示本节小结。
-3. 在章节页按问题链作答，查看 RAG 命中调试信息。
-4. 运行代码练习并查看结果与AI分析。
-
-## 默认账号
-- 管理员：`admin / 123456`
-- 教师：`teacher1 / 123456`
-- 学生：`student1 / 123456`
-
 ## 最小回归检查
 
 ```bash
-python -m py_compile app/main.py app/routers/api.py app/routers/web.py app/services/classroom_service.py app/services/content_service.py app/services/llm_router_service.py
+python -m py_compile app/main.py app/core/config.py app/core/db.py scripts/init_db.py scripts/seed_demo_data.py scripts/bootstrap.py
 python -m pytest -q tests/test_prompt_service.py tests/test_code_runner_service.py tests/test_permissions_smoke.py
 ```
 
 ## 已知限制
-- 当前环境若缺少网络/依赖，`bootstrap.py` 会给出明确提示并退出安装流程。
-- `openai_compatible` 仍是配置结构可用，默认演示不发外网请求。
+
+- 当前环境若缺少网络/依赖，`bootstrap.py` 会报错并停止，不会继续启动服务。
+- `openai_compatible` 默认仅保留配置结构，演示环境可不发外网请求。

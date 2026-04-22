@@ -26,14 +26,14 @@ def main() -> None:
     install_rc = run(pip + ["install", "-r", "requirements.txt"], allow_fail=True)
 
     if install_rc != 0:
-        print("[WARN] 依赖安装失败。可设置镜像后重试：")
-        print("       Windows: set PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple")
-        print("       Linux:   export PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple")
-        print("[WARN] 当前环境若无 sqlalchemy/fastapi，将无法初始化或启动服务。")
-        return
+        print("[ERROR] 依赖安装失败。可设置镜像后重试：")
+        print("        Windows: set PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple")
+        print("        Linux:   export PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple")
+        print("[ERROR] 未完成依赖安装，已停止。")
+        raise SystemExit(install_rc)
 
-    run([str(py), "scripts/init_db.py"], allow_fail=True)
-    run([str(py), "scripts/seed_demo_data.py"], allow_fail=True)
+    run([str(py), "scripts/init_db.py"])
+    run([str(py), "scripts/seed_demo_data.py"])
     print("[OK] Bootstrap completed.")
 
 

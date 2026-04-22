@@ -3,7 +3,9 @@ cd /d %~dp0
 
 python scripts\bootstrap.py
 if errorlevel 1 (
-  echo Bootstrap failed.
+  echo Bootstrap failed. Abort.
+  pause
+  exit /b 1
 )
 
 if not exist .venv\Scripts\python.exe (

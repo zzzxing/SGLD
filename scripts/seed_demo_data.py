@@ -7,7 +7,7 @@ if str(ROOT) not in sys.path:
 
 from sqlalchemy.orm import Session
 
-from app.core.db import SessionLocal
+from app.core.db import SessionLocal, get_database_debug_info
 from app.core.security import hash_password
 from app.models import Chapter, Course, KnowledgePoint, ModelProvider, QuestionStep, SystemConfig, User
 
@@ -133,13 +133,19 @@ def seed_system_settings(db: Session) -> None:
 
 
 def main() -> None:
+    info = get_database_debug_info()
+    print(f"[seed] configured DATABASE_URL: {info['configured_url']}")
+    print(f"[seed] resolved DATABASE_URL:   {info['resolved_url']}")
+    if info["sqlite_path"]:
+        print(f"[seed] sqlite file path:        {info['sqlite_path']}")
+
     db = SessionLocal()
     try:
         seed_users(db)
         seed_course_content(db)
         seed_model_provider(db)
         seed_system_settings(db)
-        print("seed done")
+        print("[seed] seed done")
     finally:
         db.close()
 
