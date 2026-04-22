@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="card">
+  <h2>学生端：首页</h2>
+  {% if class_status == 'not_started' %}
+    <p>课堂未开始，请等待老师开始。</p>
+  {% elif class_status == 'paused' %}
+    <p class="tip">课堂已暂停，请等待老师恢复。</p>
+  {% elif class_status == 'ended' %}
+    <p class="tip">本节课堂已结束，可查看完成情况。</p>
+  {% else %}
+    <p><strong>当前课堂：</strong>{{ current_status.chapter_title if current_status else '-' }}</p>
+    <p class="tip">开始时间：{{ current_status.started_at if current_status else '-' }}</p>
+  {% endif %}
+</section>
+
+{% for course in courses %}
+<section class="card">
+  <h3>{{ course.title }}</h3>
+  <ul>
+    {% for chapter in course.chapters if chapter.is_published %}
+      <li><a href="/student/chapter/{{ chapter.id }}">{{ chapter.title }}</a></li>
+    {% endfor %}
+  </ul>
+</section>
+{% endfor %}
+
+<script>
+  const userId = {{ request.session.get('user_id', 0) }};
+  const ws = new WebSocket(`ws://${location.host}/ws/classroom/0?role=student&user_id=${userId}`);
+  ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    if (data.type === 'classroom_status' || data.type === 'classroom_started') location.reload();
+  };
+</script>
+{% endblock %}
