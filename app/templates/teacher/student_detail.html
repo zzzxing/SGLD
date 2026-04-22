@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block page_title %}学生详情{% endblock %}
+{% block content %}
+<section class="hero-card">
+  <div>
+    <p class="eyebrow">Student Diagnosis</p>
+    <h2>学生详情：{{ student.full_name if student else ('学生' ~ record.student_id) }}</h2>
+    <p class="muted">用于课堂诊断与反馈记录。</p>
+  </div>
+  <div class="status-pill status-active">进度 {{ record.progress_percent }}%</div>
+</section>
+
+<div class="grid-2">
+  <section class="card">
+    <h3>学习状态</h3>
+    <ul class="meta-list">
+      <li><span>当前章节</span><strong>{{ chapter.title if chapter else '-' }}</strong></li>
+      <li><span>当前知识点</span><strong>{{ kp.title if kp else '-' }}</strong></li>
+      <li><span>问题链步骤</span><strong>{{ step.step_no if step else '已完成' }}</strong></li>
+      <li><span>当前进度</span><strong>{{ record.progress_percent }}%</strong></li>
+      <li><span>代码状态</span><strong>{{ record.last_code_status or '-' }}</strong></li>
+    </ul>
+    {% if record.last_code_error %}
+      <p class="error">代码错误：{{ record.last_code_error }}</p>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h3>教师评语与标签</h3>
+    <form action="/teacher/student/{{ record.student_id }}/feedback" method="post">
+      <input type="hidden" name="session_id" value="{{ session_id }}" />
+      <label>标签<input name="tag" value="{{ feedback.tag if feedback else '' }}" placeholder="如：需关注" /></label>
+      <label>评语<textarea name="comment" rows="5">{{ feedback.comment if feedback else '' }}</textarea></label>
+      <button type="submit">保存评语</button>
+    </form>
+  </section>
+</div>
+
+<section class="card">
+  <h3>最近互动记录</h3>
+  <div class="response-block">
+    <p><strong>学生回答</strong></p>
+    <p>{{ record.student_answer or '暂无' }}</p>
+    <hr />
+    <p><strong>AI 回复</strong></p>
+    <p>{{ record.ai_reply or '暂无' }}</p>
+  </div>
+</section>
+{% endblock %}

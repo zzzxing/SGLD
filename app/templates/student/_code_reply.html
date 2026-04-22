@@ -1,0 +1,15 @@
+<div class="response-block">
+  <p><strong>运行状态：</strong>{{ result.status }}</p>
+  <div class="code-result-grid">
+    <div>
+      <p class="eyebrow">stdout</p>
+      <pre>{{ result.stdout or '(empty)' }}</pre>
+    </div>
+    <div>
+      <p class="eyebrow">stderr</p>
+      <pre>{{ result.stderr or '(empty)' }}</pre>
+    </div>
+  </div>
+  <p><strong>AI分析：</strong>{{ assistant_feedback }}</p>
+  <p class="tip">RAG 命中: {{ rag_hit_count }} | 来源: {{ rag_sources }} | fallback={{ rag_fallback }}</p>
+</div>

@@ -1,0 +1,29 @@
+<h3>课堂分析概览</h3>
+<div class="stats-grid">
+  <div class="stat-card"><p>班级完成率</p><strong>{{ a.completion_rate }}%</strong></div>
+  <div class="stat-card"><p>在线人数</p><strong>{{ a.online_count }}</strong></div>
+  <div class="stat-card"><p>卡点最多步骤</p><strong>{{ a.top_stuck_step }}</strong></div>
+  <div class="stat-card"><p>最近活跃人数</p><strong>{{ a.recent_active_students }}</strong></div>
+</div>
+
+<div class="grid-2">
+  <div class="panel">
+    <p><strong>提示层级分布</strong></p>
+    <ul>
+      <li>hint1: {{ a.hint_distribution.hint1 }}</li>
+      <li>hint2: {{ a.hint_distribution.hint2 }}</li>
+      <li>hint3: {{ a.hint_distribution.hint3 }}</li>
+      <li>平均提示层级: {{ a.avg_hint_level }}</li>
+    </ul>
+  </div>
+  <div class="panel">
+    <p><strong>当前章节分布</strong></p>
+    <ul>
+      {% for k, v in a.chapter_distribution.items() %}
+        <li>{{ k }}: {{ v }}</li>
+      {% else %}
+        <li>暂无数据</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
